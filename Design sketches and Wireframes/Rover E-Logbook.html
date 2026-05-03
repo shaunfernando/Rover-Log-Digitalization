@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Rover E-Logbook · Two Directions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Inter+Tight:wght@400;500;600;700&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  html, body { margin: 0; padding: 0; background: #efe8d8; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+  ::selection { background: rgba(52, 92, 58, 0.2); }
+  textarea, input { font: inherit; }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="data.jsx"></script>
+<script type="text/babel" src="theme.jsx"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="direction-a.jsx"></script>
+<script type="text/babel" src="direction-b.jsx"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "direction": "A",
+  "dark": false,
+  "density": "spacious",
+  "layout": "split",
+  "badgeStyle": "shield",
+  "accent": "default"
+}/*EDITMODE-END*/;
+
+// Apply the user's accent override on top of the base theme.
+function applyAccent(base, accent) {
+  if (accent === "default") return base;
+  const map = {
+    forest:    { accent: "#345c3a", accentSoft: "#dde7d6" },
+    crimson:   { accent: "#a23e2a", accentSoft: "#fbe9e3" },
+    indigo:    { accent: "#3a4f7a", accentSoft: "#dde2ec" },
+    ochre:     { accent: "#a8742a", accentSoft: "#f0e3c8" },
+    plum:      { accent: "#6b3a5d", accentSoft: "#e8d8e2" },
+  };
+  if (!map[accent]) return base;
+  return { ...base, accent: map[accent].accent, accentSoft: map[accent].accentSoft };
+}
+
+function App() {
+  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const direction = tweaks.direction;
+  const dark = tweaks.dark;
+
+  const baseTheme = getTheme(direction, dark);
+  const theme = applyAccent(baseTheme, tweaks.accent);
+  const font = getFonts(direction);
+
+  const RoverApp = direction === "A" ? ARoverApp : BRoverApp;
+  const Onboarding = direction === "A" ? AOnboarding : BOnboarding;
+  const PublicProfile = direction === "A" ? APublicProfile : BPublicProfile;
+
+  const directionName = direction === "A" ? "Field Journal" : "Modern Minimal";
+  const directionSub = direction === "A"
+    ? "Editorial · warm paper · forest accent · Newsreader + Inter Tight"
+    : "Dashboard-forward · neutral grays · confident accent · Geist + Geist Mono";
+
+  // Standard desktop artboard size
+  const W = 1280, H = 820;
+
+  return (
+    <React.Fragment>
+      <DesignCanvas>
+        <DCSection
+          id="primary"
+          title={`Direction ${direction} · ${directionName}`}
+          subtitle={directionSub}
+        >
+          <DCArtboard id="dash" label="01 · Dashboard" width={W} height={H}>
+            <RoverApp initialRoute="dashboard" theme={theme} font={font} density={tweaks.density} layout={tweaks.layout} badgeStyle={tweaks.badgeStyle}/>
+          </DCArtboard>
+          <DCArtboard id="logbook" label="02 · My Logbook (feed)" width={W} height={H}>
+            <RoverApp initialRoute="logbook" theme={theme} font={font} density={tweaks.density} layout={tweaks.layout} badgeStyle={tweaks.badgeStyle}/>
+          </DCArtboard>
+          <DCArtboard id="compose" label="03 · New Entry editor" width={W} height={H}>
+            <RoverApp initialRoute="compose" theme={theme} font={font} density={tweaks.density} layout={tweaks.layout} badgeStyle={tweaks.badgeStyle}/>
+          </DCArtboard>
+          <DCArtboard id="badges" label="04 · Badges" width={W} height={H}>
+            <RoverApp initialRoute="badges" theme={theme} font={font} density={tweaks.density} layout={tweaks.layout} badgeStyle={tweaks.badgeStyle}/>
+          </DCArtboard>
+          <DCArtboard id="directory" label="05 · Troop Directory" width={W} height={H}>
+            <RoverApp initialRoute="directory" theme={theme} font={font} density={tweaks.density} layout={tweaks.layout} badgeStyle={tweaks.badgeStyle}/>
+          </DCArtboard>
+          <DCArtboard id="approvals" label="06 · Approval Queue (Skipper)" width={W} height={H}>
+            <RoverApp initialRoute="approvals" theme={theme} font={font} density={tweaks.density} layout={tweaks.layout} badgeStyle={tweaks.badgeStyle}/>
+          </DCArtboard>
+          <DCArtboard id="public" label="07 · Public Profile" width={W} height={H}>
+            <PublicProfile theme={theme} font={font} density={tweaks.density} badgeStyle={tweaks.badgeStyle}/>
+          </DCArtboard>
+          <DCArtboard id="onboarding" label="08 · Onboarding / profile creation" width={W} height={H}>
+            <Onboarding theme={theme} font={font}/>
+          </DCArtboard>
+        </DCSection>
+
+        <DCPostIt top={40} left={40} width={240}>
+          <strong>Rover E-Logbook</strong><br/>
+          Two directions, 8 live screens each.<br/>
+          Open Tweaks → switch direction, density, layout, badge shape, accent, dark mode.<br/>
+          <em>Click expand on any artboard to focus, or click into a prototype to navigate.</em>
+        </DCPostIt>
+
+        <DCPostIt top={300} left={40} width={240} rotate={2}>
+          <strong>Try:</strong> hit <em>New entry</em>, switch type to "Article", or click <em>Submit for approval</em> to advance the workflow.
+        </DCPostIt>
+      </DesignCanvas>
+
+      <TweaksPanel title="Tweaks" defaultOpen={false}>
+        <TweakSection title="Design direction">
+          <TweakRadio
+            label="Aesthetic"
+            value={tweaks.direction}
+            onChange={(v) => setTweak("direction", v)}
+            options={[
+              { value: "A", label: "Field Journal" },
+              { value: "B", label: "Modern Minimal" },
+            ]}
+          />
+          <TweakToggle
+            label="Dark mode"
+            value={tweaks.dark}
+            onChange={(v) => setTweak("dark", v)}
+          />
+        </TweakSection>
+
+        <TweakSection title="Layout">
+          <TweakSelect
+            label="Dashboard layout"
+            value={tweaks.layout}
+            onChange={(v) => setTweak("layout", v)}
+            options={[
+              { value: "split", label: "Split (60/40)" },
+              { value: "rail",  label: "Rail-first (40/60)" },
+              { value: "wide",  label: "Wide single column" },
+            ]}
+          />
+          <TweakRadio
+            label="Post density"
+            value={tweaks.density}
+            onChange={(v) => setTweak("density", v)}
+            options={[
+              { value: "spacious", label: "Spacious" },
+              { value: "compact",  label: "Compact" },
+            ]}
+          />
+        </TweakSection>
+
+        <TweakSection title="Visuals">
+          <TweakSelect
+            label="Badge shape"
+            value={tweaks.badgeStyle}
+            onChange={(v) => setTweak("badgeStyle", v)}
+            options={[
+              { value: "shield",  label: "Shield" },
+              { value: "circle",  label: "Circle" },
+              { value: "diamond", label: "Diamond" },
+            ]}
+          />
+          <TweakSelect
+            label="Accent color"
+            value={tweaks.accent}
+            onChange={(v) => setTweak("accent", v)}
+            options={[
+              { value: "default", label: "Default (per direction)" },
+              { value: "forest",  label: "Forest green" },
+              { value: "crimson", label: "Crimson" },
+              { value: "indigo",  label: "Indigo" },
+              { value: "ochre",   label: "Ochre" },
+              { value: "plum",    label: "Plum" },
+            ]}
+          />
+        </TweakSection>
+      </TweaksPanel>
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
